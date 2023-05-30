@@ -9,6 +9,8 @@ axios.interceptors.request.use(
 
       config.headers['Authorization'] = 'Bearer ' + auth_token;
 
+      config.withCredentials = true;
+
       return config;
    },
    (error) => Promise.reject(error)

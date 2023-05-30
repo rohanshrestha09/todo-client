@@ -1,7 +1,8 @@
 import type { GetServerSidePropsContext } from 'next';
-import { createContext } from 'react';
+import { createContext, useContext } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { getAuth } from 'api/auth';
+import { queryKeys } from 'utils';
 import { AUTH } from 'constants/queryKeys';
 import type { IContext, TGetServerSidePropsReturnType } from 'interface';
 
@@ -14,7 +15,7 @@ interface Props {
 const Auth: React.FC<Props> = ({ children }) => {
    const { data: authUser } = useQuery({
       queryFn: getAuth,
-      queryKey: [AUTH],
+      queryKey: queryKeys(AUTH).details(),
    });
 
    return (
@@ -23,6 +24,8 @@ const Auth: React.FC<Props> = ({ children }) => {
       </AuthContext.Provider>
    );
 };
+
+export const useAuth = () => useContext(AuthContext);
 
 export const withAuth = (
    gssp: (
@@ -42,6 +45,22 @@ export const withAuth = (
          };
       }
 
+      try {
+         const { props } = await gssp(context);
+
+         return { props };
+      } catch (err) {
+         return { notFound: true };
+      }
+   };
+};
+
+export const withoutAuth = (
+   gssp: (
+      context: GetServerSidePropsContext
+   ) => Promise<TGetServerSidePropsReturnType>
+) => {
+   return async (context: GetServerSidePropsContext) => {
       try {
          const { props } = await gssp(context);
 
